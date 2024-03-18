@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+import { useEffect } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { NavBar } from "./components/NavBar";
@@ -8,6 +8,11 @@ import { Projects } from './components/Projects';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 function App() {
+
+  useEffect( () =>{
+    document.title = 'Peter Danjuma - Portfolio';
+  },[])
+
   return (
     <div className="App">
       <NavBar />

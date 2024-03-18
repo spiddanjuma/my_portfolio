@@ -1,64 +1,65 @@
-import { useState } from "react"; 
+import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import contactImg from "../assets/img/contact-img.svg";
 import 'animate.css';
 import TrackVisibility from 'react-on-screen';
 import emailjs from '@emailjs/browser';
 
+
+
+
+
+
+
+
 export const Contact = () => {
-  const formInitialDetails = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    message: ''
-  }
-
-  const [formDetails, setFormDetails] = useState(formInitialDetails);
-  const [buttonText, setButtonText] = useState('Send');
-  const [status, setStatus] = useState({});
-
-  const onFormUpdate = (category, value) => {
-    setFormDetails({
-      ...formDetails,
-      [category]: value
-    })
-  }
+ 
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  
+  
+  
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setButtonText("Sending...");
-    try {
-      let response = await fetch("http://localhost:5000/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json;charset=utf-8",
-        },
-        body: JSON.stringify(formDetails),
-      });
-      setButtonText("Send");
-      let result = await response.json();
-      setFormDetails(formInitialDetails);
-      if (response.ok) {
-        setStatus({ success: true, message: 'Message sent successfully'});
-      } else {
-        setStatus({ success: false, message: 'Something went wrong, please try again later.'});
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setStatus({ success: false, message: 'Failed to send message. Please try again later.'});
-      setButtonText("Send");
-    }
-  };
+    e.preventDefault(); // Fix: Correct method name
 
-  return(
+    if (!email || !name || !message) {
+      setError('Please fill out all fields');
+      return;
+    }
+
+    try {
+      const serviceID = process.env.REACT_APP_SERVICE_ID;
+      const templateID = process.env.REACT_APP_TEMPLATE_ID;
+      const publicKey = process.env.REACT_APP_PUBLIC_KEY;
+
+      await emailjs.send(serviceID, templateID, {
+        from_name: name,
+        reply_to: email,
+        message: message
+      }, publicKey);
+
+      setEmail('');
+      setError('');
+      setMessage('');
+      setName('');
+
+    } catch (error) {
+      console.error('Error sending mail', error);
+      setError('Error, please try again');
+    }
+  }
+
+  return (
     <section className="contact" id="connect">
       <Container>
         <Row className="align-items-center">
           <Col size={12} md={6}>
             <TrackVisibility>
               {({ isVisible }) =>
-                <img className={isVisible ? "animate__animated animate__zoomIn" : ""} src={contactImg} alt="Contact Us"/>
+                <img className={isVisible ? "animate__animated animate__zoomIn" : ""} src={contactImg} alt="Contact Me"/>
               }
             </TrackVisibility>
           </Col>
@@ -66,34 +67,25 @@ export const Contact = () => {
             <TrackVisibility>
               {({ isVisible }) =>
                 <div className={isVisible ? "animate__animated animate__fadeIn" : ""}>
-                  <h2>Get In Touch</h2>
-                  <form onSubmit={handleSubmit}>
-                    <Row>
-                      <Col size={12} sm={6} className="px-1">
-                        <input type="text" value={formDetails.firstName} placeholder="First Name" onChange={(e) => onFormUpdate('firstName', e.target.value)} />
-                      </Col>
-                      <Col size={12} sm={6} className="px-1">
-                        <input type="text" value={formDetails.lastName} placeholder="Last Name" onChange={(e) => onFormUpdate('lastName', e.target.value)}/>
-                      </Col>
-                      <Col size={12} sm={6} className="px-1">
-                        <input type="email" value={formDetails.email} placeholder="Email Address" onChange={(e) => onFormUpdate('email', e.target.value)} />
-                      </Col>
-                      <Col size={12} sm={6} className="px-1">
-                        <input type="tel" value={formDetails.phone} placeholder="Phone No." onChange={(e) => onFormUpdate('phone', e.target.value)}/>
-                      </Col>
-                      <Col size={12} className="px-1">
-                        <textarea rows="6" value={formDetails.message} placeholder="Message" onChange={(e) => onFormUpdate('message', e.target.value)}></textarea>
-                        <button type="submit"><span>{buttonText}</span></button>
-                      </Col>
-                      {status.message &&
-                        <Col>
-                          <p className={status.success === false ? "danger" : "success"}>{status.message}</p>
-                        </Col>
-                      }
-                    </Row>
-                  </form>
-                </div>
-              }
+                <h2>Get In Touch</h2>
+                <form onSubmit={handleSubmit}>
+                  <Row>
+                    <Col size={12} sm={6} className="px-1">
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder='Full Name' type="text" className="form-control" id="inputName" />
+                    </Col>
+                    <Col size={12} sm={6} className="px-1">
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Email Address' type="email" className="form-control" id="inputEmail" />
+                    </Col>
+                    <Col size={12} className="px-1">
+                    <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder='Message me...' className="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                      <button type="submit"><span>Send</span></button>
+                    </Col>
+                    {
+                     error && <p>{error}</p>
+                    }
+                  </Row>
+                </form>
+              </div>}
             </TrackVisibility>
           </Col>
         </Row>
